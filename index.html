@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Schrodinger Simulation</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div id="ui-container">
+        <button id="playPauseBtn">Play</button>
+        <button id="stepBtn">Step Forward</button>
+        <button id="resetBtn">Reset / Apply Settings</button>
+        <br><br>
+        <label>Time Step (dt): <span id="dtValue">0.0010</span></label><br>
+        <input type="range" id="dtSlider" min="0" max="1000" data-min="0.0001" data-max="0.02" value="434">
+        <br><br>
+        <label>Wave Scale: <span id="wsValue">15</span></label><br>
+        <input type="range" id="wsSlider" min="0" max="1000" data-min="1" data-max="200" value="511">
+        <br>
+        <label>Prob Scale: <span id="psValue">60</span></label><br>
+        <input type="range" id="psSlider" min="0" max="1000" data-min="1" data-max="800" value="612">
+        <br><br>
+        <label>Steps per Frame: <span id="speedValue">1</span></label><br>
+        <input type="range" id="speedSlider" min="0" max="1000" data-min="1" data-max="500" value="0">
+        <br><br>
+        <label>Resolution (Points): <span id="ptsValue">1500</span></label><br>
+        <input type="range" id="ptsSlider" min="0" max="1000" data-min="100" data-max="5000" value="692">
+        <br>
+
+        <label>Domain (Max X): <span id="maxXValue">100</span></label><br>
+        <input type="range" id="maxXSlider" min="10" max="300" step="10" value="100">
+        <br>
+        <label>Start Pos: <span id="posValue">50</span></label><br>
+        <input type="range" id="posSlider" min="10" max="290" value="50">
+        <br>
+        <label>Momentum: <span id="momValue">2.0</span></label><br>
+        <input type="range" id="momSlider" min="0" max="10.0" step="0.1" value="2.0">
+        <br>
+        <label>Sigma (Width): <span id="sigmaValue">5.0</span></label><br>
+        <input type="range" id="sigmaSlider" min="1" max="25.0" step="0.1" value="5.0">
+    </div>
+
+    <canvas id="simulation"></canvas>
+    <script src="script.js"></script>
+</body>
+</html>

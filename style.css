@@ -1,0 +1,27 @@
+body { 
+    margin: 0; 
+    background: #050505; 
+    overflow: hidden; 
+}
+
+canvas { 
+    display: block; 
+}
+
+#ui-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: #e0e0e0;
+    font-family: monospace;
+    background: rgba(20, 20, 20, 0.8);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    user-select: none;
+}
+
+button, input {
+    margin: 5px 0;
+    font-family: monospace;
+}
