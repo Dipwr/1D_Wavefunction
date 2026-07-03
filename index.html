@@ -1,49 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Schrodinger Simulation</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>3D Schrodinger Simulation</title>
+	<link rel="stylesheet" href="style.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
-    <div id="ui-container">
-        <button id="playPauseBtn">Play</button>
-        <button id="stepBtn">Step Forward</button>
-        <button id="resetBtn">Reset / Apply Settings</button>
-        <br><br>
-        <label>Time Step (dt): <span id="dtValue">0.0010</span></label><br>
-        <input type="range" id="dtSlider" min="0" max="1000" data-min="0.0001" data-max="0.02" value="434">
-        <br><br>
-        <label>Wave Scale: <span id="wsValue">15</span></label><br>
-        <input type="range" id="wsSlider" min="0" max="1000" data-min="1" data-max="200" value="511">
-        <br>
-        <label>Prob Scale: <span id="psValue">60</span></label><br>
-        <input type="range" id="psSlider" min="0" max="1000" data-min="1" data-max="800" value="612">
-        <br><br>
-        <label>Steps per Frame: <span id="speedValue">1</span></label><br>
-        <input type="range" id="speedSlider" min="0" max="1000" data-min="1" data-max="500" value="0">
-        <br><br>
-        <label>Resolution (Points): <span id="ptsValue">1500</span></label><br>
-        <input type="range" id="ptsSlider" min="0" max="1000" data-min="100" data-max="5000" value="692">
-        <br>
+	<div id="stats-counter">
+		<div>FPS: <span id="fps-val">0</span></div>
+		<div>MS: <span id="ms-val">0.0</span> ms</div>
+	</div>
+	
+	<div id="ui-container">
+		<button id="playPauseBtn">Play</button>
+		<button id="stepBtn">Step Forward</button>
+		<button id="resetBtn">Reset / Apply</button>
+		<br><br>
+		
+		<input type="checkbox" id="realtimeCheck" checked>
+		<label for="realtimeCheck" style="color: #ffaa00; font-weight: bold;">Use Real-time dt</label><br>
 
-        <label>Domain (Max X): <span id="maxXValue">100</span></label><br>
-        <input type="range" id="maxXSlider" min="10" max="300" step="10" value="100">
-        <br>
-        <label>Start Pos: <span id="posValue">50</span></label><br>
-        <input type="range" id="posSlider" min="10" max="290" value="50">
-        <br>
-        <label>Momentum: <span id="momValue">2.0</span></label><br>
-        <input type="range" id="momSlider" min="0" max="10.0" step="0.1" value="2.0">
-        <br>
-        <label>Sigma (Width): <span id="sigmaValue">5.0</span></label><br>
-        <input type="range" id="sigmaSlider" min="1" max="25.0" step="0.1" value="5.0">
-    </div>
+		<div class="control-group">
+			<label>Time Step (dt):</label>
+			<input type="number" id="dtInput" value="0.0100" step="0.0001" disabled>
+			<input type="range" id="dtSlider" min="0" max="1000" data-min="0.0001" data-max="0.5" value="540" disabled>
+		</div>
+		
+		<div class="control-group">
+			<label>Wave Scale:</label>
+			<input type="number" id="wsInput" value="15">
+			<input type="range" id="wsSlider" min="0" max="1000" data-min="1" data-max="200" value="511">
+		</div>
 
-    <canvas id="simulation"></canvas>
-    <script src="script.js"></script>
+		<div class="control-group">
+			<label>Prob Scale:</label>
+			<input type="number" id="psInput" value="60">
+			<input type="range" id="psSlider" min="0" max="1000" data-min="1" data-max="800" value="612">
+		</div>
+
+		<div class="control-group">
+			<label>Pot. Vis Scale:</label>
+			<input type="number" id="potInput" value="2.0" step="0.1">
+			<input type="range" id="potSlider" min="0" max="1000" data-min="0.1" data-max="20" value="565">
+		</div>
+
+		<div class="control-group">
+			<label>Playback Speed:</label>
+			<input type="number" id="speedInput" value="1">
+			<input type="range" id="speedSlider" min="0" max="1000" data-min="1" data-max="500" value="0">
+		</div>
+
+		<div class="control-group">
+			<label>Sub-steps:</label>
+			<input type="number" id="subInput" value="25" step="1">
+			<input type="range" id="subSlider" min="0" max="1000" data-min="1" data-max="250" value="582">
+		</div>
+
+		<div class="control-group">
+			<label>Domain (Max X):</label>
+			<input type="number" id="maxXInput" value="100" step="10">
+			<input type="range" id="maxXSlider" min="10" max="300" step="10" value="100">
+		</div>
+
+		<div class="control-group">
+			<label>Resolution:</label>
+			<input type="number" id="ptsInput" value="2000" step="100">
+			<input type="range" id="ptsSlider" min="0" max="1000" data-min="100" data-max="5000" value="766">
+		</div>
+
+		<div class="control-group">
+			<label>Start Pos:</label>
+			<input type="number" id="posInput" value="25">
+			<input type="range" id="posSlider" min="10" max="290" value="25">
+		</div>
+
+		<div class="control-group">
+			<label>Momentum:</label>
+			<input type="number" id="momInput" value="2.0" step="0.1">
+			<input type="range" id="momSlider" min="0" max="10.0" step="0.1" value="2.0">
+		</div>
+
+		<div class="control-group">
+			<label>Sigma:</label>
+			<input type="number" id="sigmaInput" value="5.0" step="0.1">
+			<input type="range" id="sigmaSlider" min="1" max="25.0" step="0.1" value="5.0">
+		</div>
+        <hr style="border-color: #333; margin: 15px 0;">
+		
+		<div id="energy-readout" style="background: #111; padding: 10px; border-left: 3px solid #00ffff; margin-bottom: 15px; font-size: 13px;">
+			<div style="color: #ccc; margin-bottom: 5px; font-weight: bold;">Current Energy State (E = K + V)</div>
+			<div>Kinetic (K): <span id="kin-eng" style="color: #55ff55;">0.000</span></div>
+			<div>Potential (V): <span id="pot-eng" style="color: #ffaa00;">0.000</span></div>
+			<hr style="border-color: #333; margin: 5px 0;">
+			<div>Total (E): <span id="tot-eng" style="color: #00ffff; font-weight: bold;">0.000</span></div>
+		</div>
+
+		<hr style="border-color: #333; margin: 15px 0;">
+		<h4 style="margin: 0 0 10px 0; color: #ffaa00; text-transform: uppercase;">Potential Landscape V(x)</h4>
+		<div id="regions-container"></div>
+		<button id="addRegionBtn" style="width: 100%; margin-top: 5px; background: #222; border: 1px dashed #666; padding: 6px;">+ Add Region</button>
+	</div>
+
+	<canvas id="simulation"></canvas>
+	<script src="script.js"></script>
 </body>
 </html>
