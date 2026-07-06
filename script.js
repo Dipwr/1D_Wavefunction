@@ -21,9 +21,10 @@ function simulator(maxX, numPoints) {
 				if (r.type === 'constant') return r.params.height;
 				if (r.type === 'linear') return r.params.slope * (x - r.startX) + r.params.base;
 				if (r.type === 'harmonic') return 0.5 * r.params.k * Math.pow(x - r.params.center, 2);
+				if (r.type === 'custom') return r._compiledFn ? r._compiledFn(x) : 0;
 			}
 		}
-		return 0; // Free space baseline
+		return 0;
 	}
 
 	this.initWavefuntion = function(x0, k0, sigma) {
@@ -316,7 +317,6 @@ function buildSimulation() {
 }
 
 // --- POTENTIAL UI MANAGER ---
-
 function renderRegionsUI() {
 	const container = document.getElementById("regions-container");
 	container.innerHTML = "";
@@ -338,6 +338,14 @@ function renderRegionsUI() {
 				<div><label>Center X</label><br><input type="number" step="1" value="${reg.params.center}" onchange="updateRegionParam(${index}, 'center', this.value)"></div>
 				<div><label>Spring (k)</label><br><input type="number" step="0.01" value="${reg.params.k}" onchange="updateRegionParam(${index}, 'k', this.value)"></div>
 			`;
+		} else if (reg.type === 'custom') {
+			paramsHTML = `
+				<div style="flex: 2;">
+					<label>Formula: V(x) = </label><br>
+					<input type="text" value="${reg.params.formula}" onchange="updateRegionParam(${index}, 'formula', this.value)" placeholder="e.g. 5 * Math.sin(x)">
+					<div style="font-size: 10px; color: #888; margin-top: 4px;">Variables: 'x'. Available: Math.sin(), Math.cos(), Math.exp()</div>
+				</div>
+			`;
 		}
 
 		card.innerHTML = `
@@ -346,8 +354,8 @@ function renderRegionsUI() {
 				<button class="del-btn" onclick="deleteRegion(${index})">X</button>
 			</div>
 			<div class="region-row">
-				<div><label>Start X</label><br><input type="number" value="${reg.startX}" step="0.1" onchange="updateRegion(${index}, 'startX', this.value)"></div>
-				<div><label>End X</label><br><input type="number" value="${reg.endX}" step="0.1" onchange="updateRegion(${index}, 'endX', this.value)"></div>
+				<div><label>Start X</label><br><input type="number" value="${reg.startX}" step="1" onchange="updateRegion(${index}, 'startX', this.value)"></div>
+				<div><label>End X</label><br><input type="number" value="${reg.endX}" step="1" onchange="updateRegion(${index}, 'endX', this.value)"></div>
 			</div>
 			<div class="region-row">
 				<div style="flex: 2;"><label>Type</label><br>
@@ -355,6 +363,7 @@ function renderRegionsUI() {
 						<option value="constant" ${reg.type === 'constant' ? 'selected' : ''}>Constant</option>
 						<option value="linear" ${reg.type === 'linear' ? 'selected' : ''}>Linear Slope</option>
 						<option value="harmonic" ${reg.type === 'harmonic' ? 'selected' : ''}>Harmonic Well</option>
+						<option value="custom" ${reg.type === 'custom' ? 'selected' : ''}>Custom Formula</option>
 					</select>
 				</div>
 			</div>
@@ -364,13 +373,33 @@ function renderRegionsUI() {
 	});
 }
 
+window.compileCustomRegion = function(idx) {
+	const reg = potentialRegions[idx];
+	if (reg.type === 'custom') {
+		try {
+			// Create a fast, native JS function from the string
+			reg._compiledFn = new Function('x', 'return ' + reg.params.formula + ';');
+			// Test it immediately to catch syntax errors
+			reg._compiledFn(0); 
+		} catch (e) {
+			console.warn("Invalid formula in Region " + (idx+1) + ". Defaulting to 0.");
+			reg._compiledFn = function() { return 0; };
+		}
+	}
+};
+
 window.updateRegion = function(idx, field, val) {
 	potentialRegions[idx][field] = parseFloat(val);
 	updatePotentialVisuals();
 };
 
 window.updateRegionParam = function(idx, field, val) {
-	potentialRegions[idx].params[field] = parseFloat(val);
+	if (field === 'formula') {
+		potentialRegions[idx].params[field] = val;
+		compileCustomRegion(idx); // Recompile on text change
+	} else {
+		potentialRegions[idx].params[field] = parseFloat(val);
+	}
 	updatePotentialVisuals();
 };
 
@@ -379,6 +408,10 @@ window.changeRegionType = function(idx, type) {
 	if (type === 'constant') potentialRegions[idx].params = { height: 10 };
 	else if (type === 'linear') potentialRegions[idx].params = { base: 0, slope: 1 };
 	else if (type === 'harmonic') potentialRegions[idx].params = { center: (potentialRegions[idx].startX + potentialRegions[idx].endX)/2, k: 0.1 };
+	else if (type === 'custom') {
+		potentialRegions[idx].params = { formula: "5 * Math.sin(x)" };
+		compileCustomRegion(idx);
+	}
 	renderRegionsUI();
 	updatePotentialVisuals();
 };
@@ -497,8 +530,6 @@ window.addEventListener('resize', () => {
 
 function updateEnergyReadout() {
 	if (!sim) return;
-	
-	// Read the live quantum expectation values directly from the wave array
 	const energies = sim.calculateEnergies();
 
 	document.getElementById("kin-eng").innerText = energies.k.toFixed(3);
