@@ -4,17 +4,17 @@ function simulator(maxX, numPoints) {
 	this.dx = this.maxX / this.numPoints;
 	this.psiRe = new Float64Array(numPoints);
 	this.psiIm = new Float64Array(numPoints);
-	
+
 	this.cPrimeRe = new Float64Array(numPoints);
 	this.cPrimeIm = new Float64Array(numPoints);
 	this.dPrimeRe = new Float64Array(numPoints);
 	this.dPrimeIm = new Float64Array(numPoints);
-	
+
 	this.hbar = 1;
 	this.mass = 1;
 	this.regions = []; // Master list of potential regions
 
-	this.Ve = function(x) {
+	this.Ve = function (x) {
 		for (let i = 0; i < this.regions.length; i++) {
 			let r = this.regions[i];
 			if (x >= r.startX && x <= r.endX) {
@@ -27,7 +27,7 @@ function simulator(maxX, numPoints) {
 		return 0;
 	}
 
-	this.initWavefuntion = function(x0, k0, sigma) {
+	this.initWavefuntion = function (x0, k0, sigma) {
 		let sumProb = 0;
 		for (let i = 0; i < this.numPoints; i++) {
 			let x = i * this.dx;
@@ -45,7 +45,7 @@ function simulator(maxX, numPoints) {
 		}
 	}
 
-	this.step = function(dt) {
+	this.step = function (dt) {
 		const r = (this.hbar * dt) / (4 * this.mass * this.dx * this.dx);
 
 		for (let i = 1; i < this.numPoints - 1; i++) {
@@ -56,18 +56,18 @@ function simulator(maxX, numPoints) {
 
 			let old_j_Re = this.psiRe[i];
 			let old_j_Im = this.psiIm[i];
-			let old_jm1_Re = this.psiRe[i-1];
-			let old_jm1_Im = this.psiIm[i-1];
-			let old_jp1_Re = this.psiRe[i+1];
-			let old_jp1_Im = this.psiIm[i+1];
+			let old_jm1_Re = this.psiRe[i - 1];
+			let old_jm1_Im = this.psiIm[i - 1];
+			let old_jp1_Re = this.psiRe[i + 1];
+			let old_jp1_Im = this.psiIm[i + 1];
 
 			let term2_Re = old_j_Re - (-(2 * r + vj)) * old_j_Im;
 			let term2_Im = old_j_Im + (-(2 * r + vj)) * old_j_Re;
 
 			let term1_Re = -r * old_jm1_Im;
-			let term1_Im =  r * old_jm1_Re;
+			let term1_Im = r * old_jm1_Re;
 			let term3_Re = -r * old_jp1_Im;
-			let term3_Im =  r * old_jp1_Re;
+			let term3_Im = r * old_jp1_Re;
 
 			let D_Re = term1_Re + term2_Re + term3_Re;
 			let D_Im = term1_Im + term2_Im + term3_Im;
@@ -79,9 +79,9 @@ function simulator(maxX, numPoints) {
 				this.dPrimeRe[i] = (D_Re * B_Re + D_Im * B_Im) / denom;
 				this.dPrimeIm[i] = (D_Im * B_Re - D_Re * B_Im) / denom;
 			} else {
-				let sub_Re =  r * this.cPrimeIm[i-1];
-				let sub_Im = -r * this.cPrimeRe[i-1];
-				
+				let sub_Re = r * this.cPrimeIm[i - 1];
+				let sub_Im = -r * this.cPrimeRe[i - 1];
+
 				let den_Re = B_Re - sub_Re;
 				let den_Im = B_Im - sub_Im;
 				let denomMag = den_Re * den_Re + den_Im * den_Im;
@@ -89,8 +89,8 @@ function simulator(maxX, numPoints) {
 				this.cPrimeRe[i] = (-r * den_Im) / denomMag;
 				this.cPrimeIm[i] = (-r * den_Re) / denomMag;
 
-				let num_Re = D_Re - (r * this.dPrimeIm[i-1]);
-				let num_Im = D_Im - (-r * this.dPrimeRe[i-1]);
+				let num_Re = D_Re - (r * this.dPrimeIm[i - 1]);
+				let num_Im = D_Im - (-r * this.dPrimeRe[i - 1]);
 
 				this.dPrimeRe[i] = (num_Re * den_Re + num_Im * den_Im) / denomMag;
 				this.dPrimeIm[i] = (num_Im * den_Re - num_Re * den_Im) / denomMag;
@@ -98,8 +98,8 @@ function simulator(maxX, numPoints) {
 		}
 
 		for (let i = this.numPoints - 2; i >= 1; i--) {
-			let next_Re = this.psiRe[i+1];
-			let next_Im = this.psiIm[i+1];
+			let next_Re = this.psiRe[i + 1];
+			let next_Im = this.psiIm[i + 1];
 
 			let mult_Re = this.cPrimeRe[i] * next_Re - this.cPrimeIm[i] * next_Im;
 			let mult_Im = this.cPrimeRe[i] * next_Im + this.cPrimeIm[i] * next_Re;
@@ -109,7 +109,7 @@ function simulator(maxX, numPoints) {
 		}
 	}
 
-	this.calculateEnergies = function() {
+	this.calculateEnergies = function () {
 		let expV = 0;
 		let expK = 0;
 		const C = (this.hbar * this.hbar) / (2 * this.mass * this.dx * this.dx);
@@ -123,16 +123,16 @@ function simulator(maxX, numPoints) {
 			expV += prob * this.Ve(i * this.dx) * this.dx;
 
 			// Expected Kinetic <K> = Integral( Psi* (-hbar^2/2m d^2/dx^2) Psi dx )
-			let d2re = this.psiRe[i+1] - 2 * re + this.psiRe[i-1];
-			let d2im = this.psiIm[i+1] - 2 * im + this.psiIm[i-1];
-			
+			let d2re = this.psiRe[i + 1] - 2 * re + this.psiRe[i - 1];
+			let d2im = this.psiIm[i + 1] - 2 * im + this.psiIm[i - 1];
+
 			let kRe = -C * d2re;
 			let kIm = -C * d2im;
 
 			// Multiply by complex conjugate (Re - i*Im)
 			expK += (re * kRe + im * kIm) * this.dx;
 		}
-		
+
 		return { k: expK, v: expV, t: expK + expV };
 	}
 }
@@ -177,13 +177,13 @@ function createTextSprite(text, fontSize, color) {
 	const metrics = ctx.measureText(text);
 	cvs.width = Math.max(64, metrics.width + 20);
 	cvs.height = fontSize + 20;
-	
+
 	ctx.font = `bold ${fontSize}px monospace`;
 	ctx.fillStyle = color;
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'middle';
 	ctx.fillText(text, cvs.width / 2, cvs.height / 2);
-	
+
 	const texture = new THREE.CanvasTexture(cvs);
 	const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
 	sprite.scale.set(cvs.width / 15, cvs.height / 15, 1);
@@ -199,7 +199,7 @@ function clearGroup(group) {
 			if (child.material.map) child.material.map.dispose();
 			child.material.dispose();
 		}
-		if (child.children) clearGroup(child); 
+		if (child.children) clearGroup(child);
 	}
 }
 
@@ -239,7 +239,7 @@ function updatePotentialVisuals() {
 		const v = sim.Ve(i * sim.dx);
 		const idx = i * 3;
 		pos[idx] = x3D;
-		pos[idx + 1] = v * potScale; 
+		pos[idx + 1] = v * potScale;
 		pos[idx + 2] = -0.1; // Push slightly behind the wave
 	}
 	potGeo.attributes.position.needsUpdate = true;
@@ -254,11 +254,11 @@ function buildSimulation() {
 	const numPoints = parseInt(document.getElementById("ptsInput").value);
 	const x0 = parseFloat(document.getElementById("posInput").value);
 	const k0 = parseFloat(document.getElementById("momInput").value);
-	const sigma = parseFloat(document.getElementById("sigmaInput").value); 
+	const sigma = parseFloat(document.getElementById("sigmaInput").value);
 
 	sim = new simulator(maxX, numPoints);
 	sim.regions = potentialRegions; // Sync UI array to engine
-	sim.initWavefuntion(x0, k0, sigma); 
+	sim.initWavefuntion(x0, k0, sigma);
 	xOffset = sim.maxX / 2;
 
 	const axisMat = new THREE.LineBasicMaterial({ color: 0x444444 });
@@ -284,7 +284,7 @@ function buildSimulation() {
 	const titleZ = createTextSprite("Imaginary (Z)", 32, "#5555ff");
 	titleZ.position.set(-xOffset, 0, 40);
 	simGroup.add(titleZ);
-	
+
 	// Add Potential Energy Title
 	const titleV = createTextSprite("Potential V(x)", 32, "#ffffff");
 	titleV.position.set(xOffset + 5, 20, 0);
@@ -303,7 +303,7 @@ function buildSimulation() {
 	potGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(sim.numPoints * 3), 3));
 	simGroup.add(new THREE.Line(potGeo, new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2, transparent: true, opacity: 0.6 })));
 
-	const arrowSpacing = Math.max(1, Math.floor(sim.numPoints / 32)); 
+	const arrowSpacing = Math.max(1, Math.floor(sim.numPoints / 32));
 	for (let i = 0; i < sim.numPoints; i += arrowSpacing) {
 		const arrow = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), new THREE.Vector3((i * sim.dx) - xOffset, 0, 0), 1, 0xaaaaaa, 0.5, 0.5);
 		simGroup.add(arrow);
@@ -320,7 +320,7 @@ function buildSimulation() {
 function renderRegionsUI() {
 	const container = document.getElementById("regions-container");
 	container.innerHTML = "";
-	
+
 	potentialRegions.forEach((reg, index) => {
 		const card = document.createElement("div");
 		card.className = "region-card";
@@ -373,27 +373,27 @@ function renderRegionsUI() {
 	});
 }
 
-window.compileCustomRegion = function(idx) {
+window.compileCustomRegion = function (idx) {
 	const reg = potentialRegions[idx];
 	if (reg.type === 'custom') {
 		try {
 			// Create a fast, native JS function from the string
 			reg._compiledFn = new Function('x', 'return ' + reg.params.formula + ';');
 			// Test it immediately to catch syntax errors
-			reg._compiledFn(0); 
+			reg._compiledFn(0);
 		} catch (e) {
-			console.warn("Invalid formula in Region " + (idx+1) + ". Defaulting to 0.");
-			reg._compiledFn = function() { return 0; };
+			console.warn("Invalid formula in Region " + (idx + 1) + ". Defaulting to 0.");
+			reg._compiledFn = function () { return 0; };
 		}
 	}
 };
 
-window.updateRegion = function(idx, field, val) {
+window.updateRegion = function (idx, field, val) {
 	potentialRegions[idx][field] = parseFloat(val);
 	updatePotentialVisuals();
 };
 
-window.updateRegionParam = function(idx, field, val) {
+window.updateRegionParam = function (idx, field, val) {
 	if (field === 'formula') {
 		potentialRegions[idx].params[field] = val;
 		compileCustomRegion(idx); // Recompile on text change
@@ -403,11 +403,11 @@ window.updateRegionParam = function(idx, field, val) {
 	updatePotentialVisuals();
 };
 
-window.changeRegionType = function(idx, type) {
+window.changeRegionType = function (idx, type) {
 	potentialRegions[idx].type = type;
 	if (type === 'constant') potentialRegions[idx].params = { height: 10 };
 	else if (type === 'linear') potentialRegions[idx].params = { base: 0, slope: 1 };
-	else if (type === 'harmonic') potentialRegions[idx].params = { center: (potentialRegions[idx].startX + potentialRegions[idx].endX)/2, k: 0.1 };
+	else if (type === 'harmonic') potentialRegions[idx].params = { center: (potentialRegions[idx].startX + potentialRegions[idx].endX) / 2, k: 0.1 };
 	else if (type === 'custom') {
 		potentialRegions[idx].params = { formula: "5 * Math.sin(x)" };
 		compileCustomRegion(idx);
@@ -416,7 +416,7 @@ window.changeRegionType = function(idx, type) {
 	updatePotentialVisuals();
 };
 
-window.deleteRegion = function(idx) {
+window.deleteRegion = function (idx) {
 	potentialRegions.splice(idx, 1);
 	renderRegionsUI();
 	updatePotentialVisuals();
@@ -446,7 +446,7 @@ function bindLogSlider(id, inputId, callback, isInt = false, fractionDigits = 4)
 			// Visually clamp the slider handle to the edges if they type outside bounds
 			let clampedForSlider = Math.max(minVal, Math.min(maxVal, val));
 			slider.value = valToSlider(clampedForSlider);
-			
+
 			// Format the input box but KEEP the out-of-bounds value for the physics engine
 			input.value = isInt ? Math.round(val) : val.toFixed(fractionDigits);
 		}
@@ -455,14 +455,14 @@ function bindLogSlider(id, inputId, callback, isInt = false, fractionDigits = 4)
 
 	slider.addEventListener("input", (e) => update(sliderToVal(e.target.value), true));
 	input.addEventListener("change", (e) => update(parseFloat(e.target.value), false));
-	
+
 	update(parseFloat(input.value), false);
 }
 
 function bindLinearSlider(id, inputId, callback) {
 	const slider = document.getElementById(id);
 	const input = document.getElementById(inputId);
-	
+
 	// Read the native min/max from the HTML element
 	const minVal = parseFloat(slider.min);
 	const maxVal = parseFloat(slider.max);
@@ -480,16 +480,16 @@ function bindLinearSlider(id, inputId, callback) {
 
 	slider.addEventListener("input", (e) => update(parseFloat(e.target.value), true));
 	input.addEventListener("change", (e) => update(parseFloat(e.target.value), false));
-	
+
 	update(parseFloat(input.value), false);
 }
 
 renderRegionsUI();
 buildSimulation();
 
-bindLogSlider("dtSlider", "dtInput", (val) => dt = val, false, 4); 
-bindLogSlider("wsSlider", "wsInput", (val) => { waveScale = val; rebuildAxes(); if(!isPlaying) updateRenderData(); }, true);
-bindLogSlider("psSlider", "psInput", (val) => { probScale = val; rebuildAxes(); if(!isPlaying) updateRenderData(); }, true);
+bindLogSlider("dtSlider", "dtInput", (val) => dt = val, false, 4);
+bindLogSlider("wsSlider", "wsInput", (val) => { waveScale = val; rebuildAxes(); if (!isPlaying) updateRenderData(); }, true);
+bindLogSlider("psSlider", "psInput", (val) => { probScale = val; rebuildAxes(); if (!isPlaying) updateRenderData(); }, true);
 bindLogSlider("potSlider", "potInput", (val) => { potScale = val; updatePotentialVisuals(); }, false, 1);
 bindLogSlider("speedSlider", "speedInput", (val) => stepsPerFrame = val, true);
 bindLogSlider("ptsSlider", "ptsInput", null, true);
@@ -549,17 +549,17 @@ function updateRenderData() {
 
 		const idx = i * 3;
 		wPos[idx] = x3D; wPos[idx + 1] = re * waveScale; wPos[idx + 2] = im * waveScale;
-		pPos[idx] = x3D; pPos[idx + 1] = prob * probScale; pPos[idx + 2] = 0; 
+		pPos[idx] = x3D; pPos[idx + 1] = prob * probScale; pPos[idx + 2] = 0;
 	}
-	
+
 	waveGeo.attributes.position.needsUpdate = true;
 	probGeo.attributes.position.needsUpdate = true;
 
 	for (const a of arrows) {
 		const re = sim.psiRe[a.index];
 		const im = sim.psiIm[a.index];
-		let mag = Math.sqrt(re*re + im*im) * waveScale;
-		if (mag < 0.01) mag = 0.01; 
+		let mag = Math.sqrt(re * re + im * im) * waveScale;
+		if (mag < 0.01) mag = 0.01;
 		a.helper.setDirection(new THREE.Vector3(0, re, im).normalize());
 		a.helper.setLength(mag, mag * 0.2, mag * 0.2);
 	}
@@ -579,17 +579,17 @@ function frame() {
 	if (isPlaying) {
 		const totalTimePerFrame = (isRealtime ? (now - lastFrameTime) / 1000 : dt) * stepsPerFrame;
 		const localDt = totalTimePerFrame / subSteps;
-		
+
 		for (let i = 0; i < subSteps; i++) {
 			sim.step(localDt);
 		}
 		updateRenderData();
 	}
-	
+
 	lastFrameTime = now;
 	controls.update();
 	renderer.render(scene, camera);
-	
+
 	let t1 = performance.now();
 	msVal.innerText = (t1 - t0).toFixed(1);
 
